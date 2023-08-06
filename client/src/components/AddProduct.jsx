@@ -11,8 +11,9 @@ import {
   MenuItem,
 } from "@mui/material";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
-const AddProduct= () => {
+const AddProduct = () => {
   const [productData, setProductData] = useState({
     name: "",
     category: "",
@@ -20,9 +21,9 @@ const AddProduct= () => {
     price: "",
     color: "",
     size: "",
-    image: "",
     stock: "",
   });
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -32,25 +33,52 @@ const AddProduct= () => {
     }));
   };
 
+  const handleImageChange = (event) => {
+    setSelectedImage(event.target.files[0]);
+  };
+
+  const addProductToDatabase = async (formData) => {
+    try {
+      const response = await axios.post("/product", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      console.log(response.data);
+
+      // Clear the form fields and selected image after successful submission
+      setProductData({
+        name: "",
+        category: "",
+        description: "",
+        price: "",
+        color: "",
+        size: "",
+        stock: "",
+      });
+      setSelectedImage(null);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    // You can send the productData to your backend API to add the product to the database
-    console.log(productData);
-    // Reset the form after submitting
-    setProductData({
-      name: "",
-      category: "",
-      description: "",
-      price: "",
-      color: "",
-      size: "",
-      image: "",
-      stock: "",
-    });
+
+    const formData = new FormData();
+    formData.append("name", productData.name);
+    formData.append("category", productData.category);
+    formData.append("description", productData.description);
+    formData.append("price", productData.price);
+    formData.append("color", productData.color);
+    formData.append("size", productData.size);
+    formData.append("stock", productData.stock);
+    formData.append("file", selectedImage);
+
+    addProductToDatabase(formData);
   };
 
   return (
-    <Box sx={{
+    <Box
+      sx={{
         backgroundImage: `url('add product.jpg')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -59,125 +87,139 @@ const AddProduct= () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-      }}>
-    <Container maxWidth="xl">
-      <Typography variant="h4" align="center" sx={{ marginBottom: 4 }}>
-        Add Product
-      </Typography>
-      <Box component="form" onSubmit={handleSubmit}>
-        <TextField
-          label="Product Name"
-          fullWidth
-          required
-          name="name"
-          value={productData.name}
-          onChange={handleInputChange}
-          sx={{
-            backgroundColor: "rgba(255, 255, 255, 0.8)",marginBottom: 2, // Transparent white
-          }}
-        />
-        <FormControl fullWidth required sx={{
-            backgroundColor: "rgba(255, 255, 255, 0.8)",marginBottom: 2, // Transparent white
-          }}>
-          <InputLabel>Category</InputLabel>
-          <Select
-            name="category"
-            value={productData.category}
-            onChange={handleInputChange}
-          >
-            <MenuItem value="clothing">Clothing</MenuItem>
-            <MenuItem value="shoes">Shoes</MenuItem>
-            <MenuItem value="accessories">Accessories</MenuItem>
-            {/* Add more categories as needed */}
-          </Select>
-        </FormControl>
-        <TextField
-          label="Description"
-          fullWidth
-          required
-          multiline
-          rows={4}
-          name="description"
-          value={productData.description}
-          onChange={handleInputChange}
-          sx={{
-            backgroundColor: "rgba(255, 255, 255, 0.8)",marginBottom: 2, // Transparent white
-          }}
-        />
-        <TextField
-          label="Price"
-          fullWidth
-          required
-          type="number"
-          name="price"
-          value={productData.price}
-          onChange={handleInputChange}
-          sx={{
-            backgroundColor: "rgba(255, 255, 255, 0.8)",marginBottom: 2, // Transparent white
-          }}
-        />
-        <TextField
-          label="Color"
-          fullWidth
-          required
-          name="color"
-          value={productData.color}
-          onChange={handleInputChange}
-          sx={{
-            backgroundColor: "rgba(255, 255, 255, 0.8)",marginBottom: 2, // Transparent white
-          }}
-        />
-        <TextField
-          label="Size"
-          fullWidth
-          required
-          name="size"
-          value={productData.size}
-          onChange={handleInputChange}
-          sx={{
-            backgroundColor: "rgba(255, 255, 255, 0.8)",marginBottom: 2, // Transparent white
-          }}
-        />
-        <TextField
-          label="Image URL"
-          fullWidth
-          required
-          name="image"
-          value={productData.image}
-          onChange={handleInputChange}
-          sx={{
-            backgroundColor: "rgba(255, 255, 255, 0.8)",marginBottom: 2, // Transparent white
-          }}
-        />
-        <TextField
-          label="Stock"
-          fullWidth
-          required
-          type="number"
-          name="stock"
-          value={productData.stock}
-          onChange={handleInputChange}
-          sx={{
-            backgroundColor: "rgba(255, 255, 255, 0.8)",marginBottom: 2, // Transparent white
-          }}
-        />
-        <Button type="submit" variant="contained" color="primary">
+      }}
+    >
+      <Container maxWidth="xl">
+        <Typography variant="h4" align="center" sx={{ marginBottom: 4 }}>
           Add Product
-        </Button>
-        <Button
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit}>
+          <TextField
+            label="Product Name"
+            fullWidth
+            required
+            name="name"
+            value={productData.name}
+            onChange={handleInputChange}
+            sx={{
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              marginBottom: 2,
+            }}
+          />
+          <FormControl fullWidth required sx={{
+            backgroundColor: "rgba(255, 255, 255, 0.8)",marginBottom: 2,
+          }}>
+            <InputLabel>Category</InputLabel>
+            <Select
+              name="category"
+              value={productData.category}
+              onChange={handleInputChange}
+            >
+              <MenuItem value="clothing">Clothing</MenuItem>
+              <MenuItem value="shoes">Shoes</MenuItem>
+              <MenuItem value="accessories">Accessories</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            label="Description"
+            fullWidth
+            required
+            multiline
+            rows={4}
+            name="description"
+            value={productData.description}
+            onChange={handleInputChange}
+            sx={{
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              marginBottom: 2,
+            }}
+          />
+          <TextField
+            label="Price"
+            fullWidth
+            required
+            type="number"
+            name="price"
+            value={productData.price}
+            onChange={handleInputChange}
+            sx={{
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              marginBottom: 2,
+            }}
+          />
+          <TextField
+            label="Color"
+            fullWidth
+            required
+            name="color"
+            value={productData.color}
+            onChange={handleInputChange}
+            sx={{
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              marginBottom: 2,
+            }}
+          />
+          <TextField
+            label="Size"
+            fullWidth
+            required
+            name="size"
+            value={productData.size}
+            onChange={handleInputChange}
+            sx={{
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              marginBottom: 2,
+            }}
+          />
+          <TextField
+            fullWidth
+            required
+            type="file"
+            name="image"
+            accept="image/*"
+            onChange={handleImageChange}
+            sx={{
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              marginBottom: 2,
+            }}
+          />
+          <TextField
+            label="Stock"
+            fullWidth
+            required
+            type="number"
+            name="stock"
+            value={productData.stock}
+            onChange={handleInputChange}
+            sx={{
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              marginBottom: 2,
+            }}
+          />
+          <Button type="submit" variant="contained" color="primary">
+            Add Product
+          </Button>
+          <Button
             variant="contained"
             color="primary"
             size="large"
-            sx={{ width: '40%', marginBottom: '30px',marginTop: '20px', backgroundColor: '#f39c12', '&:hover': { backgroundColor: '#e67e22' } ,display:"flex",justifyContent:"center" }}
-          component={Link}
-          to="/admin" // Replace with the actual path for deleting product
-           // Align button to the left
-        >
-          Go To Main
-        </Button>
-      </Box>
-      
-    </Container>
+            sx={{
+              width: '40%',
+              marginBottom: '30px',
+              marginTop: '20px',
+              backgroundColor: '#f39c12',
+              '&:hover': { backgroundColor: '#e67e22' },
+              display: "flex",
+              justifyContent: "center",
+            }}
+            component={Link}
+            to="/admin" // Replace with the actual path for deleting product
+            // Align button to the left
+          >
+            Go To Main
+          </Button>
+        </Box>
+      </Container>
     </Box>
   );
 };
