@@ -1,5 +1,12 @@
 import React from "react";
-import { Grid, Box, Container, Typography, Button } from "@mui/material";
+import {
+  Grid,
+  Box,
+  Container,
+  Typography,
+  Button,
+  TextField,
+} from "@mui/material";
 import Products from "../Products/Products";
 import { product2 } from "../SmallComponents/image";
 import Table from "@mui/material/Table";
@@ -9,26 +16,42 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-const cartItems = [
-  { id: 1, name: "Product 1", price: 10 },
-  { id: 2, name: "Product 2", price: 20 },
-];
+import { url } from "../../utils";
+import { useEffect } from "react";
+import axios from "axios";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
-  const rows = [
-    {
-      name: "Product1",
-      details: "kmfdmkf",
-      quantity: "1",
-      price: 60,
-    },
-    {
-      name: "Product4",
-      details: "kmfdmkf",
-      quantity: "3",
-      price: 80,
-    },
-  ];
+  const Navigate = useNavigate();
+  const [cartItems, setCartItems] = useState([]);
+  const [orderitem, setOrderItem] = useState([]);
+
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [Quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    const id = localStorage.getItem("cart");
+    axios
+      .get(`${url}/product/${id}`)
+      .then((response) => {
+        // setProducts(response.data);
+        console.log(response.data);
+        setCartItems(response.data);
+        // console.log(product.images[0]);
+      })
+      .catch((error) => {
+        console.error("Error fetching products:", error);
+      });
+  }, []);
+  const [userid, setUserId] = useState();
+  const [productid, setProductId] = useState();
+  const handleOrder = () => {
+    console.log("order clicked");
+    setUserId(localStorage.getItem("userId"));
+    setProductId(localStorage.getItem("cart"));
+    
+  };
   return (
     <Box sx={{ backgroundColor: "#121120" }}>
       <Container maxWidth="xl">
@@ -56,6 +79,7 @@ const Cart = () => {
               <Table sx={{ minWidth: 650 }} aria-label="simple table">
                 <TableHead>
                   <TableRow>
+                    <TableCell sx={{ color: "white" }}>Image</TableCell>
                     <TableCell sx={{ color: "white" }}>Title</TableCell>
                     <TableCell align="right" sx={{ color: "white" }}>
                       Details
@@ -69,7 +93,7 @@ const Cart = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rows?.map(({ name, details, price, quantity }) => (
+                  {cartItems?.map(({ name, description, price, images }) => (
                     <TableRow
                       sx={{
                         "&:last-child td, &:last-child th": { border: 0 },
@@ -80,16 +104,35 @@ const Cart = () => {
                         scope="row"
                         sx={{ color: "white" }}
                       >
+                        <img
+                          src={`${url}/${images[0]}`}
+                          alt=""
+                          width={100}
+                          hight={100}
+                        />
+                      </TableCell>
+                      <TableCell
+                        component="th"
+                        scope="row"
+                        sx={{ color: "white" }}
+                      >
                         {name}
                       </TableCell>
                       <TableCell align="right" sx={{ color: "white" }}>
-                        {details}
+                        {description}
+                      </TableCell>
+                      <TableCell align="right" sx={{ color: "white" }}>
+                        <TextField
+                          type="number"
+                          value={Quantity}
+                          variant="outlined"
+                          size="small"
+                          onChange={(e) => setQuantity(e.target.value)}
+                          sx={{ color: "white", backgroundColor: "white" }}
+                        />
                       </TableCell>
                       <TableCell align="right" sx={{ color: "white" }}>
                         {price}
-                      </TableCell>
-                      <TableCell align="right" sx={{ color: "white" }}>
-                        {quantity}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -98,10 +141,23 @@ const Cart = () => {
             </TableContainer>
           </Grid>
           <Grid item xs={12} sx={{ display: "flex", justifyContent: "center" }}>
+            {/* Shipping Address Input */}
+            <TextField
+              label="Shipping Address"
+              variant="filled"
+              value={shippingAddress}
+              onChange={(e) => setShippingAddress(e.target.value)}
+              sx={{ backgroundColor: "white", width: "100%" }}
+              multiline
+              rows={4}
+            />
+          </Grid>
+          <Grid item xs={12} sx={{ display: "flex", justifyContent: "center" }}>
             <Button
               variant="contained"
               color="primary"
               sx={{ marginBottom: "10px" }}
+              onClick={handleOrder}
             >
               OrderNow
             </Button>
